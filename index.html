@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Fan Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #2563eb; --dark: #0f172a; --light: #f8fafc; --border: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--light); color: var(--dark); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        header { width: 100%; max-width: 800px; text-align: center; margin: 40px 0; }
+        h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 2.2rem; }
+        .online-status { background: #fff; padding: 8px 16px; border-radius: 50px; border: 1px solid var(--border); font-size: 0.8rem; margin-top: 10px; display: inline-flex; align-items: center; }
+        .dot { height: 8px; width: 8px; background: #10b981; border-radius: 50%; margin-right: 8px; }
+        .grid { width: 100%; max-width: 800px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: #fff; padding: 30px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
+        .val { font-family: 'Montserrat', sans-serif; font-size: 3rem; display: block; margin: 10px 0; }
+        .contrib { color: var(--primary); font-weight: 800; font-size: 0.9rem; }
+        .btn { font-family: 'Montserrat', sans-serif; font-weight: 900; background: var(--dark); color: #fff; border: none; padding: 20px; border-radius: 15px; cursor: pointer; width: 100%; transition: 0.1s; margin-top: 10px; }
+        .btn:active { transform: scale(0.96); }
+        .chart-box { grid-column: 1 / -1; background: #fff; padding: 20px; border-radius: 20px; border: 1px solid var(--border); min-height: 300px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Fan Stats Live</h1>
+    <div class="online-status"><span class="dot"></span> Зараз на сайті: <b id="online" style="margin-left:5px">1</b></div>
+</header>
+
+<div class="grid">
+    <div class="card">
+        <h3>Глобальні кліки</h3>
+        <span class="val" id="total-clicks">0</span>
+        <button class="btn" id="clickBtn">КЛІКНУТИ</button>
+        <p class="contrib">Мій внесок: <span id="percent">0.00</span>%</p>
+    </div>
+    <div class="card">
+        <h3>Візити</h3>
+        <span class="val" id="total-visitors">0</span>
+        <p style="color: #64748b; font-size: 0.8rem;">Реальні унікальні сесії</p>
+    </div>
+    <div class="chart-box">
+        <canvas id="chart"></canvas>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, increment, push, set, onDisconnect, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDMobGtxm-gmnDHJKG4WYJcWcTktdxG7P8",
+        authDomain: "funclick-49dc2.firebaseapp.com",
+        projectId: "funclick-49dc2",
+        databaseURL: "https://funclick-49dc2-default-rtdb.europe-west1.firebasedatabase.app",
+        storageBucket: "funclick-49dc2.firebasestorage.app",
+        messagingSenderId: "433698873703",
+        appId: "1:433698873703:web:c52afae659b70d9c8f8fc2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let globalClicks = 0;
+    let myClicks = parseInt(localStorage.getItem('my_clicks_fan')) || 0;
+
+    // --- ПЕРЕВІРКА ТА ІНІЦІАЛІЗАЦІЯ БАЗИ ---
+    const statsRef = ref(db, 'stats');
+    get(statsRef).then((snap) => {
+        if (!snap.exists()) {
+            set(statsRef, { total_clicks: 0, total_visitors: 0 });
+        }
+    });
+
+    // --- ОНЛАЙН (PRESENCE) ---
+    const myStatusRef = push(ref(db, 'online_users'));
+    onValue(ref(db, '.info/connected'), (snap) => {
+        if (snap.val() === true) {
+            set(myStatusRef, true);
+            onDisconnect(myStatusRef).remove();
+        }
+    });
+    onValue(ref(db, 'online_users'), (snap) => {
+        document.getElementById('online').innerText = snap.size || 1;
+    });
+
+    // --- ЖИВА СТАТИСТИКА ---
+    onValue(statsRef, (snap) => {
+        const data = snap.val() || { total_clicks: 0, total_visitors: 0 };
+        globalClicks = data.total_clicks;
+        document.getElementById('total-clicks').innerText = globalClicks;
+        document.getElementById('total-visitors').innerText = data.total_visitors;
+        updatePercent();
+    });
+
+    function updatePercent() {
+        const p = globalClicks > 0 ? (myClicks / globalClicks * 100) : 0;
+        document.getElementById('percent').innerText = p.toFixed(2);
+    }
+
+    // --- КЛІК (ПРАЦЮЄ НАЖИВО) ---
+    document.getElementById('clickBtn').addEventListener('click', () => {
+        myClicks++;
+        localStorage.setItem('my_clicks_fan', myClicks);
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Оновлюємо все одним махом
+        const updates = {};
+        updates['stats/total_clicks'] = increment(1);
+        updates[`history/${today}/clicks`] = increment(1);
+        
+        update(ref(db), updates);
+        updatePercent();
+    });
+
+    // --- ПЕРШИЙ ВІЗИТ (ЧЕСНИЙ) ---
+    if (!sessionStorage.getItem('was_here')) {
+        update(statsRef, { total_visitors: increment(1) });
+        sessionStorage.setItem('was_here', 'true');
+    }
+
+    // --- ГРАФІК ---
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [{ label: 'Кліки за добу', data: [], borderColor: '#2563eb', tension: 0.4, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.05)' }] },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    onValue(ref(db, 'history'), (snap) => {
+        const history = snap.val() || {};
+        const labels = Object.keys(history).sort().slice(-7);
+        const values = labels.map(l => history[l].clicks || 0);
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
+        chart.update();
+    });
+
+</script>
+</body>
+      </html>
