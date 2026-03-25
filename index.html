@@ -3,269 +3,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Дія | Minecraft State</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <title>Fan Stats</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        :root {
-            --dia-gradient: linear-gradient(135deg, #0d0d0d 0%, #1a1c1e 100%);
-            --accent-blue: #007aff;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-white: #ffffff;
-            --text-gray: #8e8e93;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background: var(--dia-gradient);
-            background-attachment: fixed;
-            color: var(--text-white);
-            min-height: 100vh;
-            padding: env(safe-area-inset-top) 20px 40px;
-        }
-
-        .container {
-            max-width: 500px; /* Стилізація під мобільний інтерфейс */
-            margin: 0 auto;
-        }
-
-        /* Header */
-        header {
-            padding: 40px 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-weight: 900;
-            font-size: 32px;
-            letter-spacing: -1.5px;
-            text-transform: uppercase;
-        }
-
-        .status-badge {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #4cd964;
-        }
-
-        /* Card Section */
-        .doc-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: 15px;
-            padding: 10px 0 30px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-        }
-
-        .doc-scroll::-webkit-scrollbar { display: none; }
-
-        .passport-card {
-            min-width: 100%;
-            background: linear-gradient(145deg, #1e1e1e, #141414);
-            border-radius: 28px;
-            padding: 24px;
-            border: 1px solid var(--border);
-            scroll-snap-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .passport-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
-        }
-
-        .passport-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .passport-header h2 {
-            font-weight: 800;
-            font-size: 14px;
-            color: var(--text-gray);
-            text-transform: uppercase;
-        }
-
-        .user-data {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .avatar {
-            width: 90px;
-            height: 110px;
-            background: #2c2c2e;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 1px solid var(--border);
-        }
-
-        .user-main-info h3 {
-            font-weight: 900;
-            font-size: 22px;
-            margin-bottom: 4px;
-            letter-spacing: -0.5px;
-        }
-
-        .id-text {
-            font-family: monospace;
-            color: var(--accent-blue);
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        /* Services Grid */
-        .services-label {
-            font-weight: 800;
-            font-size: 18px;
-            margin: 20px 0 15px;
-            display: block;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .menu-item {
-            background: var(--glass);
-            border: 1px solid var(--border);
+        :root { --primary: #2563eb; --dark: #0f172a; --light: #f8fafc; --border: #e2e8f0; --accent: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--light); 
+            color: var(--dark); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
             padding: 20px;
-            border-radius: 24px;
-            text-decoration: none;
-            color: white;
-            transition: background 0.2s;
         }
 
-        .menu-item:active {
-            background: rgba(255,255,255,0.1);
+        header { width: 100%; max-width: 1000px; text-align: center; margin: 20px 0; }
+        h1 { font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 2rem; letter-spacing: -1px; }
+        
+        .top-panel { width: 100%; max-width: 1000px; margin-bottom: 20px; }
+        .feed-container { background: var(--dark); color: #fff; padding: 12px 20px; border-radius: 12px; display: flex; align-items: center; font-size: 0.85rem; margin-bottom: 15px; min-height: 45px; }
+        .feed-container b { color: #f59e0b; margin-right: 10px; text-transform: uppercase; font-size: 0.75rem; white-space: nowrap;}
+        #feed-text { transition: opacity 0.3s ease; }
+        
+        .goal-container { background: #fff; padding: 20px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
+        .progress-bar { width: 100%; height: 12px; background: var(--border); border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); width: 0%; transition: width 0.5s ease; }
+
+        .grid { 
+            width: 100%; 
+            max-width: 1000px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
         }
 
-        .menu-item .icon {
-            font-size: 24px;
-            margin-bottom: 12px;
-            display: block;
+        .card { 
+            background: #fff; 
+            padding: 25px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            text-align: center; 
+            position: relative;
         }
+        
+        .val { 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 3rem; 
+            display: block; 
+            margin: 5px 0; 
+            font-weight: 900; 
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        
+        .label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; letter-spacing: 1.5px; font-weight: 800; }
+        
+        .btn { 
+            font-family: 'Montserrat', sans-serif; 
+            font-weight: 900; 
+            background: var(--dark); 
+            color: #fff; 
+            border: none; 
+            padding: 22px; 
+            border-radius: 18px; 
+            cursor: pointer; 
+            width: 100%; 
+            transition: 0.1s; 
+            margin-top: 15px; 
+            font-size: 1.2rem; 
+        }
+        .btn:active { transform: scale(0.96); }
 
-        .menu-item span {
-            font-weight: 700;
-            font-size: 15px;
-            display: block;
-        }
+        .cps-badge { position: absolute; top: 15px; right: 15px; background: #fef2f2; color: #ef4444; font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 900; }
 
-        /* Optimization for big screens */
-        @media (min-width: 800px) {
-            .container { max-width: 800px; }
-            .menu-grid { grid-template-columns: 1fr 1fr 1fr; }
-            .passport-card { min-width: 400px; }
-        }
+        .charts-wrapper { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; width: 100%; }
+        .chart-box { background: #fff; padding: 25px; border-radius: 20px; border: 1px solid var(--border); width: 100%; }
+        .chart-container { position: relative; height: 250px; width: 100%; margin-top: 15px; }
+
+        /* Стилі для таблиці останніх кліків */
+        .log-table { width: 100%; margin-top: 15px; border-collapse: collapse; font-size: 0.8rem; }
+        .log-table th { text-align: left; color: #64748b; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .log-table td { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .time-cell { color: #94a3b8; font-family: monospace; }
+
+        .leader-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .highlight { color: var(--primary); font-weight: 800; }
+        
+        .online-status { margin-top: 5px; font-size: 0.8rem; color: var(--accent); font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .online-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+        
+        .edit-name { font-size: 0.7rem; color: var(--primary); text-decoration: none; font-weight: 700; cursor: pointer; margin-top: 6px; display: inline-block; transition: 0.2s; }
+        .edit-name:hover { opacity: 0.7; }
+        .rank { font-size: 0.7rem; font-weight: 800; background: #eff6ff; color: #1d4ed8; padding: 4px 12px; border-radius: 8px; margin-top: 8px; display: inline-block; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <div class="logo">Дія</div>
-        <div class="status-badge">● ОНЛАЙН</div>
-    </header>
+<header>
+    <h1>Live Dashboard</h1>
+    <div class="online-status"><span class="online-dot"></span> Зараз онлайн: <span id="online">1</span></div>
+</header>
 
-    <span class="services-label">Ваші документи</span>
-    
-    <div class="doc-scroll">
-        <div class="passport-card" id="main-passport">
-            <div class="passport-header">
-                <h2>ID-картка громадянина</h2>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Coat_of_arms_of_Ukraine.svg/150px-Coat_of_arms_of_Ukraine.svg.png" width="15" alt="Герб">
-            </div>
-            <div class="user-data">
-                <img src="https://minotar.net/avatar/Steve/100.png" class="avatar" id="user-img">
-                <div class="user-main-info">
-                    <h3 id="user-nickname">Завантаження...</h3>
-                    <p id="user-full-id" class="id-text">UA-0000-0000000000</p>
-                    <p style="font-size: 11px; color: var(--text-gray); margin-top: 10px;">Дійсний до: 2030-01-01</p>
-                </div>
-            </div>
-        </div>
+<div class="top-panel">
+    <div class="feed-container">
+        <b>⚡ Live Feed:</b>
+        <span id="feed-text">Підключення до мережі...</span>
     </div>
 
-    <span class="services-label">Послуги</span>
-    
-    <div class="menu-grid">
-        <a href="#" class="menu-item">
-            <span class="icon">🏢</span>
-            <span>Мій бізнес</span>
-        </a>
-        <a href="#" class="menu-item">
-            <span class="icon">⚖️</span>
-            <span>Судові справи</span>
-        </a>
-        <a href="#" class="menu-item">
-            <span class="icon">🗺️</span>
-            <span>Земельна ділянка</span>
-        </a>
-        <a href="#" class="menu-item">
-            <span class="icon">💰</span>
-            <span>Податки</span>
-        </a>
+    <div class="goal-container">
+        <span class="label" id="goal-text">Командна мета: 0 / 1000000</span>
+        <div class="progress-bar"><div class="progress-fill" id="goal-fill"></div></div>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <div class="cps-badge" id="cps-badge">CPS: <span id="cps-display">0</span></div>
+        <span class="label">Глобальні кліки</span>
+        <span class="val" id="total-clicks">0</span>
+        <button class="btn" id="clickBtn">КЛІКНУТИ!</button>
+    </div>
+
+    <div class="card">
+        <span class="label">Твій результат</span>
+        <span id="display-name" style="font-size: 1rem; display: block; font-weight: 900; color: var(--dark); margin-top: 8px;">...</span>
+        <span class="edit-name" id="changeNameBtn">Змінити ім'я</span>
+        <br><span class="rank" id="my-rank">Новачок 🌱</span>
+        <span class="val" id="my-clicks-display" style="color: var(--primary);">0</span>
+        <p class="label">Внесок: <span id="percent" class="highlight">0.00</span>%</p>
+    </div>
+
+    <div class="card">
+        <span class="label">Останні дії (Live)</span>
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th>Користувач</th>
+                    <th style="text-align: right;">Час</th>
+                </tr>
+            </thead>
+            <tbody id="click-logs">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="grid-column: 1 / -1;">
+        <span class="label">Топ-5 Гравців</span>
+        <div id="leaderboard" style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;"></div>
+    </div>
+
+    <div class="charts-wrapper">
+        <div class="chart-box">
+            <span class="label">Динаміка за 24 години</span>
+            <div class="chart-container">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <span class="label">Історія (7 днів)</span>
+            <div class="chart-container">
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, increment, push, set, onDisconnect, remove, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAYT4He9ApYf5HHVyQAubhBXJnYP2AMCFI",
-        authDomain: "japancountry-e722b.firebaseapp.com",
-        projectId: "japancountry-e722b",
-        storageBucket: "japancountry-e722b.firebasestorage.app",
-        messagingSenderId: "230124139254",
-        appId: "1:230124139254:web:2fbd58f293e0387c69b2d7"
+        apiKey: "AIzaSyDMobGtxm-gmnDHJKG4WYJcWcTktdxG7P8",
+        authDomain: "funclick-49dc2.firebaseapp.com",
+        projectId: "funclick-49dc2",
+        databaseURL: "https://funclick-49dc2-default-rtdb.europe-west1.firebasedatabase.app",
+        storageBucket: "funclick-49dc2.firebasestorage.app",
+        messagingSenderId: "433698873703",
+        appId: "1:433698873703:web:c52afae659b70d9c8f8fc2"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
+    const getKyivDate = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Kyiv' }).format(new Date());
+    const getKyivHour = () => new Intl.DateTimeFormat('uk-UA', { timeZone: 'Europe/Kyiv', hour: '2-digit', hour12: false }).format(new Date());
+    const getKyivTime = () => new Intl.DateTimeFormat('uk-UA', { timeZone: 'Europe/Kyiv', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date());
 
-            if (userSnap.exists()) {
-                const data = userSnap.data();
-                const nick = data.nickname || "Громадянин";
-                document.getElementById('user-nickname').innerText = nick.toUpperCase();
-                document.getElementById('user-full-id').innerText = data.customID || "UA-2026-0000000001";
-                document.getElementById('user-img').src = `https://minotar.net/avatar/${nick}/100.png`;
-            }
+    let myID = localStorage.getItem('user_id_v3') || ('User_' + Math.floor(Math.random() * 8999 + 1000));
+    localStorage.setItem('user_id_v3', myID);
+    
+    let myClicks = parseInt(localStorage.getItem('my_clicks_fan')) || 0;
+    let globalClicks = 0;
+
+    const refreshUI = () => {
+        document.getElementById('display-name').innerText = myID;
+        document.getElementById('my-clicks-display').innerText = myClicks;
+        updateRank();
+        updatePercent();
+    };
+
+    function updateRank() {
+        const ranks = [
+            { min: 10000, label: 'Легенда 🔥' },
+            { min: 5000, label: 'Кібер-атлет 🤖' },
+            { min: 1000, label: 'Майстер 🖱️' },
+            { min: 100, label: 'Енерджайзер ⚡' },
+            { min: 0, label: 'Новачок 🌱' }
+        ];
+        document.getElementById('my-rank').innerText = ranks.find(r => myClicks >= r.min).label;
+    }
+
+    function postToFeed(message) {
+        set(ref(db, 'live_feed'), { text: message, timestamp: Date.now(), user: myID });
+    }
+
+    // --- ЛОГІКА ЗМІНИ ІМЕНІ ---
+    document.getElementById('changeNameBtn').onclick = () => {
+        const newName = prompt("Введіть нове ім'я (макс. 15 символів):", myID);
+        if (newName && newName.trim() !== "" && newName !== myID) {
+            const cleanName = newName.trim().substring(0, 15);
+            const oldName = myID;
+            remove(ref(db, `leaderboard/${myID}`));
+            myID = cleanName;
+            localStorage.setItem('user_id_v3', myID);
+            set(ref(db, `leaderboard/${myID}`), myClicks);
+            postToFeed(`${oldName} тепер відомий як ${cleanName} ✨`);
+            refreshUI();
+        }
+    };
+
+    onValue(ref(db, 'stats'), (snap) => {
+        globalClicks = snap.val()?.total_clicks || 0;
+        document.getElementById('total-clicks').innerText = globalClicks;
+        document.getElementById('goal-text').innerText = `Командна мета: ${globalClicks} / 1000000`;
+        document.getElementById('goal-fill').style.width = Math.min((globalClicks / 1000000) * 100, 100) + '%';
+        updatePercent();
+    });
+
+    const updatePercent = () => {
+        const p = globalClicks > 0 ? (myClicks / globalClicks * 100) : 0;
+        document.getElementById('percent').innerText = p.toFixed(2);
+    };
+
+    document.getElementById('clickBtn').onclick = () => {
+        myClicks++;
+        clickTimestamps.push(Date.now());
+        localStorage.setItem('my_clicks_fan', myClicks);
+        refreshUI();
+
+        const date = getKyivDate();
+        const hour = getKyivHour();
+        const time = getKyivTime();
+        
+        const updates = {};
+        updates['stats/total_clicks'] = increment(1);
+        updates[`history/${date}/clicks`] = increment(1);
+        updates[`history_hourly/${date}/${hour}`] = increment(1);
+        updates[`leaderboard/${myID}`] = myClicks;
+        
+        // Лог останнього кліку
+        const logRef = push(ref(db, 'last_clicks'));
+        set(logRef, { user: myID, time: time });
+
+        if(myClicks % 100 === 0) postToFeed(`Вау! ${myID} подолав відмітку у ${myClicks} кліків! 🏆`);
+        update(ref(db), updates);
+    };
+
+    // Слухач логів кліків (показуємо 5 останніх)
+    const logsQuery = query(ref(db, 'last_clicks'), limitToLast(5));
+    onValue(logsQuery, (snap) => {
+        const logs = [];
+        snap.forEach(child => { logs.unshift(child.val()); });
+        document.getElementById('click-logs').innerHTML = logs.map(l => `
+            <tr>
+                <td class="highlight" style="font-size: 0.75rem;">${l.user}</td>
+                <td class="time-cell" style="text-align: right;">${l.time}</td>
+            </tr>
+        `).join('');
+    });
+
+    onValue(ref(db, 'live_feed'), (snap) => {
+        const data = snap.val();
+        if (data) {
+            const el = document.getElementById('feed-text');
+            el.style.opacity = 0;
+            setTimeout(() => { el.innerText = data.text; el.style.opacity = 1; }, 300);
         }
     });
-</script>
 
+    let clickTimestamps = [];
+    setInterval(() => {
+        const now = Date.now();
+        clickTimestamps = clickTimestamps.filter(t => now - t < 1000);
+        const cps = clickTimestamps.length;
+        document.getElementById('cps-display').innerText = cps;
+        document.getElementById('clickBtn').style.background = cps > 8 ? '#ef4444' : 'var(--dark)';
+    }, 100);
+
+    onValue(ref(db, 'leaderboard'), (snap) => {
+        const entries = Object.entries(snap.val() || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        document.getElementById('leaderboard').innerHTML = entries.map(([name, score], i) => `
+            <div class="leader-item">
+                <span class="${name === myID ? 'highlight' : ''}">${i+1}. ${name}</span>
+                <span class="highlight">${score}</span>
+            </div>
+        `).join('');
+    });
+
+    const myOnlineRef = push(ref(db, 'online_users'));
+    onValue(ref(db, '.info/connected'), (snap) => { if (snap.val()) { set(myOnlineRef, true); onDisconnect(myOnlineRef).remove(); } });
+    onValue(ref(db, 'online_users'), (snap) => document.getElementById('online').innerText = snap.size || 1);
+
+    const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } };
+    const dailyChart = new Chart(document.getElementById('dailyChart'), { type: 'line', data: { labels: [], datasets: [{ data: [], borderColor: '#2563eb', tension: 0.4, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.05)' }] }, options: chartOptions });
+    const hourlyChart = new Chart(document.getElementById('hourlyChart'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#10b981', borderRadius: 5 }] }, options: chartOptions });
+
+    onValue(ref(db, 'history'), (snap) => {
+        const history = snap.val() || {};
+        const labels = Object.keys(history).sort().slice(-7);
+        dailyChart.data.labels = labels.map(l => l.split('-').slice(1).reverse().join('.'));
+        dailyChart.data.datasets[0].data = labels.map(l => history[l].clicks || 0);
+        dailyChart.update();
+    });
+
+    onValue(ref(db, `history_hourly/${getKyivDate()}`), (snap) => {
+        const hours = snap.val() || {};
+        const labels = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
+        hourlyChart.data.labels = labels.map(h => h + ':00');
+        hourlyChart.data.datasets[0].data = labels.map(h => hours[h] || 0);
+        hourlyChart.update();
+    });
+
+    refreshUI();
+</script>
 </body>
 </html>
